@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
-import Dashboard from "./pages/Dashboard";
 import CalendarPage from "./pages/calendar/CalendarPage";
 import TimeOffPage from "./pages/time-off/TimeOffPage";
 import ProjectsPage from "./pages/projects/ProjectsPage";
@@ -26,7 +25,7 @@ export default function App() {
       <Route path="onboarding" element={<OnboardingPage />} />
       <Route path="welcome" element={<SuccessPage />} />
       <Route element={<AppLayout />}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<Navigate to="/login" replace />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="time-off" element={<TimeOffPage />} />
         <Route path="projects" element={<ProjectsPage />} />
