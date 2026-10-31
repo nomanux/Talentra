@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "./styles/dark-icons.css";
+
+/* Design tokens from the Figma "Hirely" file. Themable values live in :root / .dark below. */
+@theme inline {
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-brand: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: var(--page);
+  --color-card: var(--card);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+  --color-stroke-primary: var(--stroke-primary);
+  --color-stroke-secondary: var(--stroke-secondary);
+}
+
+@theme {
+  --color-white: #ffffff;
+  --color-icon-primary: #171717;
+  --color-icon-secondary: #575757;
+
+  --color-primary: #14b8a6;
+  --color-primary-dark: #0f766e;
+  --color-orange: #f97316;
+  --color-orange-alpha-10: #ff692e1a;
+  --color-error: #de4400;
+  --color-success: #178c4e;
+  --color-success-alpha-10: #1fc16b1a;
+  --color-success-alpha-20: #1fc16b33;
+  --color-up: #38c793;
+  --color-down: #fe4b4c;
+  --color-info: #3559e9;
+  --color-info-alpha-10: #335cff1a;
+  --color-pending: #faad14;
+  --color-pending-pale: #fff7e8;
+
+  --color-violet: #8e76ff;
+  --color-sky: #47befc;
+  --color-aqua: #41d7c9;
+  --color-pink: #fe69ae;
+
+  --shadow-sm: 0 2px 4px 0 #1b1c1d0a;
+}
+
+/* Light (default) and dark values, from the "Visual Design - Light/Dark" pages. */
+:root {
+  --page: #f5f5f5;
+  --card: #ffffff;
+  --surface: #f5f5f5;
+  --text-primary: #0e121b;
+  --text-secondary: #525866;
+  --text-tertiary: #99a0ad;
+  --text-disabled: #dce1e1;
+  --stroke-primary: #dbe0e9;
+  --stroke-secondary: #eaecf0;
+  color-scheme: light;
+}
+
+.dark {
+  --page: #171717;
+  --card: #0d0d0d;
+  --surface: #171717;
+  --text-primary: #f5f7fa;
+  --text-secondary: #99a0ad;
+  --text-tertiary: #99a0ad;
+  --text-disabled: #3a3d45;
+  --stroke-primary: #222530;
+  --stroke-secondary: #ffffff1a;
+  color-scheme: dark;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-page font-sans text-text-primary antialiased;
+  }
+}
+
+/* Typography scale (Hanken Grotesk, -1% tracking). */
+@utility text-h1 {
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -0.32px;
+  font-weight: 500;
+}
+@utility text-h2 {
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.24px;
+  font-weight: 500;
+}
+@utility text-h3 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 500;
+}
+@utility text-h4 {
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: -0.18px;
+  font-weight: 500;
+}
+@utility text-h5 {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.16px;
+  font-weight: 500;
+}
+@utility text-body1 {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.14px;
+  font-weight: 500;
+}
+@utility text-body2 {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.12px;
+  font-weight: 500;
+}

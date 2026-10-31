@@ -1,0 +1,24 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="169" height="126" viewBox="0 0 169 126" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Container" clip-path="url(#clip0_0_10)">
+<rect width="169" height="126" fill="white"/>
+<rect id="Sub-bar" x="6" y="68" width="163" height="1" fill="#DBE0E9"/>
+<rect id="Sub-bar_2" x="6" y="38" width="163" height="1" fill="#DBE0E9"/>
+<rect id="Sub-bar_3" x="6" y="8" width="163" height="1" fill="#DBE0E9"/>
+<rect id="Sub-bar_4" x="6" y="98" width="163" height="1" fill="#DBE0E9"/>
+<rect id="Indicator" x="132" width="1" height="126" fill="#DBE0E9"/>
+<rect id="Indicator_2" x="102" width="1" height="126" fill="#DBE0E9"/>
+<rect id="Indicator_3" x="72" width="1" height="126" fill="#DBE0E9"/>
+<rect id="Indicator_4" x="42" width="1" height="126" fill="#DBE0E9"/>
+<rect id="Indicator_5" x="12" width="1" height="126" fill="#DBE0E9"/>
+<circle id="Ellipse 2998" cx="85" cy="63" r="106" fill="url(#paint0_radial_0_10)"/>
+</g>
+<defs>
+<radialGradient id="paint0_radial_0_10" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(85 63) rotate(90) scale(57.5)">
+<stop stop-color="white" stop-opacity="0.1"/>
+<stop offset="1" stop-color="white"/>
+</radialGradient>
+<clipPath id="clip0_0_10">
+<rect width="169" height="126" fill="white"/>
+</clipPath>
+</defs>
+</svg>

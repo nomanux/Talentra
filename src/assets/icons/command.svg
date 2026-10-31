@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="command">
+<path id="Vector" d="M4 4H8V8H4V4Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#525866"/>
+<path id="Vector_2" d="M2.5 11C3.325 11 4 10.325 4 9.5V8H2.5C1.675 8 1 8.675 1 9.5C1 10.325 1.675 11 2.5 11Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#525866"/>
+<path id="Vector_3" d="M2.5 4H4V2.5C4 1.675 3.325 1 2.5 1C1.675 1 1 1.675 1 2.5C1 3.325 1.675 4 2.5 4Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#525866"/>
+<path id="Vector_4" d="M8 4H9.5C10.325 4 11 3.325 11 2.5C11 1.675 10.325 1 9.5 1C8.675 1 8 1.675 8 2.5V4Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#525866"/>
+<path id="Vector_5" d="M9.5 11C10.325 11 11 10.325 11 9.5C11 8.675 10.325 8 9.5 8H8V9.5C8 10.325 8.675 11 9.5 11Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#525866"/>
+<g id="Vector_6" opacity="0">
+</g>
+</g>
+</svg>

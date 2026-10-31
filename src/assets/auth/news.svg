@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="news">
+<path id="Vector" d="M24 20V12C24 8.22876 24 6.34315 22.8284 5.17157C21.6568 4 19.7712 4 16 4H10.6667C6.89543 4 5.00981 4 3.83824 5.17157C2.66667 6.34315 2.66667 8.22876 2.66667 12V20C2.66667 23.7712 2.66667 25.6568 3.83824 26.8284C5.00981 28 6.89543 28 10.6667 28H26.6667" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#1DAF61"/>
+<path id="Vector_2" d="M8 10.6667H18.6667" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#1DAF61"/>
+<path id="Vector_3" d="M8 16H18.6667" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#1DAF61"/>
+<path id="Vector_4" d="M8 21.3333H13.3333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#1DAF61"/>
+<path id="Vector_5" d="M24 10.6667H25.3333C27.2189 10.6667 28.1617 10.6667 28.7476 11.2525C29.3333 11.8382 29.3333 12.7811 29.3333 14.6667V25.3333C29.3333 26.8061 28.1395 28 26.6667 28C25.1939 28 24 26.8061 24 25.3333V10.6667Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="#1DAF61"/>
+</g>
+</svg>

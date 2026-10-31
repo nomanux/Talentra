@@ -1,0 +1,28 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="29.2" height="35.2" viewBox="0 0 29.2 35.2" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="Vector" filter="url(#filter0_di_0_256)">
+<use xlink:href="#stroke0_0_256" fill="white"/>
+<mask id="stroke1_0_256" fill="white">
+<use xlink:href="#stroke0_0_256"/>
+</mask>
+<path d="M6.4 32.8H22.8C25.451 32.8 27.6 30.651 27.6 28V13.2101C27.6 11.9241 27.084 10.692 26.1677 9.78974L18.4387 2.17968C17.5408 1.29555 16.3312 0.8 15.071 0.8H6.4C3.74903 0.8 1.6 2.94903 1.6 5.6V28C1.6 30.651 3.74903 32.8 6.4 32.8Z" stroke-width="2.4" stroke="#CDD0D5" mask="url(#stroke1_0_256)"/>
+</g>
+<defs>
+<filter id="filter0_di_0_256" x="0" y="-2.4" width="29.2" height="37.6" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="0.8"/>
+<feGaussianBlur stdDeviation="0.8"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.894118 0 0 0 0 0.898039 0 0 0 0 0.905882 0 0 0 0.24 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_256"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_256" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="-3.2"/>
+<feGaussianBlur stdDeviation="1.6"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.813571 0 0 0 0 0.82 0 0 0 0 0.826429 0 0 0 0.32 0"/>
+<feBlend mode="normal" in2="shape" result="effect2_innerShadow_0_256"/>
+</filter>
+<path id="stroke0_0_256" d="M22.8 32.8H6.4C3.74903 32.8 1.6 30.651 1.6 28V5.6C1.6 2.94903 3.74903 0.8 6.4 0.8H15.071C16.3312 0.8 17.5408 1.29555 18.4387 2.17968L26.1677 9.78974C27.084 10.692 27.6 11.9241 27.6 13.2101V28C27.6 30.651 25.451 32.8 22.8 32.8Z"/>
+</defs>
+</svg>

@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="asana">
+<path id="bg" d="M12 1.5C6.20859 1.5 1.5 6.20859 1.5 12C1.5 17.7914 6.20859 22.5 12 22.5C17.7914 22.5 22.5 17.7914 22.5 12C22.5 6.20859 17.7914 1.5 12 1.5Z" fill="url(#paint0_radial_0_60)"/>
+<path id="asana_2" d="M15.3903 11.9558C13.9488 11.9558 12.7804 13.1409 12.7804 14.6028C12.7804 16.0648 13.9488 17.25 15.3903 17.25C16.8316 17.25 18 16.0648 18 14.6028C18 13.1409 16.8316 11.9558 15.3903 11.9558ZM8.60978 11.956C7.16848 11.956 6 13.1409 6 14.603C6 16.0648 7.16848 17.25 8.60978 17.25C10.0512 17.25 11.2197 16.0648 11.2197 14.603C11.2197 13.1409 10.0512 11.956 8.60978 11.956ZM14.6097 8.64699C14.6097 10.1089 13.4414 11.2943 12.0001 11.2943C10.5586 11.2943 9.39024 10.1089 9.39024 8.64699C9.39024 7.18516 10.5586 6 12.0001 6C13.4414 6 14.6097 7.18516 14.6097 8.64699Z" fill="white"/>
+</g>
+<defs>
+<radialGradient id="paint0_radial_0_60" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(12 12.977) scale(13.9153)">
+<stop stop-color="#F4BC41"/>
+<stop offset="0.6" stop-color="#E7688F"/>
+<stop offset="0.9991" stop-color="#E65F5A"/>
+</radialGradient>
+</defs>
+</svg>
