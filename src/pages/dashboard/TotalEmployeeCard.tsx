@@ -3,11 +3,14 @@ import Card from "../../components/ui/Card";
 import chevronDown from "../../assets/icons/chevron-down.svg";
 
 const GROUPS = [
-  { label: "Full-Time Employees", count: "1.382", color: "bg-violet" },
-  { label: "Part-Time Employees", count: "194", color: "bg-sky" },
-  { label: "Contract employees", count: "283", color: "bg-aqua" },
-  { label: "Internship Employees", count: "35", color: "bg-pink" },
+  { label: "Full-Time Employees", count: 563, color: "bg-violet" },
+  { label: "Part-Time Employees", count: 375, color: "bg-sky" },
+  { label: "Contract employees", count: 250, color: "bg-aqua" },
+  { label: "Internship Employees", count: 62, color: "bg-pink" },
 ];
+
+const TOTAL = GROUPS.reduce((sum, group) => sum + group.count, 0);
+const formatCount = (count: number) => new Intl.NumberFormat("de-DE").format(count);
 
 const FILTERS = ["Employment Type", "Department", "Location"];
 
@@ -16,7 +19,7 @@ export default function TotalEmployeeCard() {
   const [open, setOpen] = useState(false);
 
   return (
-    <Card className="relative flex flex-col gap-4 overflow-hidden rounded-xl pb-10 sm:gap-7 sm:pb-[47px]">
+    <Card className="relative flex flex-col gap-4 overflow-hidden rounded-xl sm:gap-7">
       <div className="flex h-14 items-center justify-between px-4 py-3">
         <h2 className="text-h4">Total Employee</h2>
         <div className="relative">
@@ -51,12 +54,21 @@ export default function TotalEmployeeCard() {
 
       <div className="flex flex-col gap-3 px-4 sm:gap-5">
         <p className="flex items-center gap-2">
-          <span className="text-h2 sm:text-h1">1.894</span>
+          <span className="text-h2 sm:text-h1">{formatCount(TOTAL)}</span>
           <span className="text-h5 text-text-secondary">Employees</span>
         </p>
-        <div className="flex gap-1">
+        <div
+          className="flex h-3 w-full overflow-hidden rounded-lg sm:h-[22px]"
+          role="img"
+          aria-label={`Employment type distribution across ${formatCount(TOTAL)} employees`}
+        >
           {GROUPS.map((g) => (
-            <div key={g.label} className={`h-3 flex-1 rounded-lg sm:h-[22px] ${g.color}`} />
+            <div
+              key={g.label}
+              title={`${g.label}: ${formatCount(g.count)} employees (${((g.count / TOTAL) * 100).toFixed(1)}%)`}
+              className={`h-full ${g.color} ${g === GROUPS[0] ? "rounded-l-lg" : ""} ${g === GROUPS[GROUPS.length - 1] ? "rounded-r-lg" : ""}`}
+              style={{ width: `${(g.count / TOTAL) * 100}%` }}
+            />
           ))}
         </div>
       </div>
@@ -69,14 +81,12 @@ export default function TotalEmployeeCard() {
               <span className="truncate text-body2 text-text-secondary sm:text-h5 sm:whitespace-nowrap">{g.label}</span>
             </div>
             <div className="flex flex-col gap-0.5 sm:gap-[6px] sm:py-[6px]">
-              <span className="text-h4 sm:text-h2">{g.count}</span>
+              <span className="text-h4 sm:text-h2">{formatCount(g.count)}</span>
               <span className="text-body2 text-text-secondary sm:text-h5">Employees</span>
             </div>
           </div>
         ))}
       </div>
-
-      <p className="absolute bottom-3 left-4 text-body2 text-text-secondary sm:bottom-4">We’ve been handle 3.162 projects so far!</p>
     </Card>
   );
 }

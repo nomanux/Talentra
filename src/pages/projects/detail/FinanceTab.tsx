@@ -1,6 +1,9 @@
 import { useState } from "react";
 import Tag, { type TagTone } from "../../../components/ui/Tag";
 import { RowActions, Table, Td, Th, Tr } from "../../../components/ui/Table";
+import EditRecordModal, { type EditField } from "../../../components/ui/EditRecordModal";
+import { formatDisplayDate, toDateInputValue } from "../../../utils/dateFormat";
+import useTableSort from "../../../components/ui/useTableSort";
 import invoiceIcon from "../../../assets/icons/invoice.svg";
 import cartIcon from "../../../assets/icons/shopping-cart.svg";
 
@@ -27,13 +30,31 @@ const RAW: [string, string, string, string, string, string, string][] = [
   ["#256584", "Flores, Juanita", "Nguyen, Shane", "May 6, 2012", "1/31/14", "Declined", "$1,250.00"],
 ];
 
-/** Tag colours follow the row order used in the Figma table. */
-const toneFor = (i: number): TagTone => (i === 0 ? "error" : i === 4 || i === 5 ? "info" : i < 9 ? "success" : "pending");
+const toneFor = (status: string): TagTone => {
+  if (/cancelled|declined|overdue|return/i.test(status)) return "error";
+  if (/paid|converted|submitted/i.test(status)) return "success";
+  if (/draft|unsaved|unpaid/i.test(status)) return "pending";
+  return "info";
+};
 
-const INVOICES: Invoice[] = RAW.map(([number, client, project, issued, due, status, amount], id) => ({ id, number, client, project, issued, due, status, amount }));
+const INVOICES: Invoice[] = RAW.map(([number, client, project, issued, due, status, amount], id) => ({
+  id, number, client, project, issued: formatDisplayDate(issued), due: formatDisplayDate(due), status, amount,
+}));
+const INVOICE_EDIT_FIELDS: EditField[] = [
+  { key: "number", label: "Invoice number" },
+  { key: "client", label: "Client name" },
+  { key: "project", label: "Project name" },
+  { key: "issued", label: "Date issued", type: "date" },
+  { key: "due", label: "Due date", type: "date" },
+  { key: "status", label: "Status", options: [...new Set(RAW.map((row) => row[5]))] },
+  { key: "amount", label: "Amount" },
+];
 
 export default function FinanceTab() {
   const [rows, setRows] = useState(INVOICES);
+  const [editing, setEditing] = useState<Invoice | null>(null);
+  const { sort, toggleSort, sortRows } = useTableSort<Invoice>();
+  const sortedInvoices = sortRows(rows);
 
   return (
     <div className="flex flex-col gap-3">
@@ -58,18 +79,18 @@ export default function FinanceTab() {
         <Table>
           <thead>
             <tr>
-              <Th className="w-[158px]">Invoice number</Th>
-              <Th className="w-[165px]">Client name</Th>
-              <Th className="w-[157px]">Project name</Th>
-              <Th className="w-[177px]">Date issued</Th>
-              <Th className="w-[97px]">Due Date</Th>
-              <Th className="w-[157px]">Status</Th>
-              <Th className="w-[128px]">Amount</Th>
-              <Th className="w-[63px]">Action</Th>
+              <Th className="w-[158px]" onSort={() => toggleSort("number")} sortDirection={sort?.key === "number" ? sort.direction : null}>Invoice number</Th>
+              <Th className="w-[165px]" onSort={() => toggleSort("client")} sortDirection={sort?.key === "client" ? sort.direction : null}>Client name</Th>
+              <Th className="w-[157px]" onSort={() => toggleSort("project")} sortDirection={sort?.key === "project" ? sort.direction : null}>Project name</Th>
+              <Th className="w-[177px]" onSort={() => toggleSort("issued")} sortDirection={sort?.key === "issued" ? sort.direction : null}>Date issued</Th>
+              <Th className="w-[97px]" onSort={() => toggleSort("due")} sortDirection={sort?.key === "due" ? sort.direction : null}>Due Date</Th>
+              <Th className="w-[157px]" onSort={() => toggleSort("status")} sortDirection={sort?.key === "status" ? sort.direction : null}>Status</Th>
+              <Th className="w-[128px]" onSort={() => toggleSort("amount")} sortDirection={sort?.key === "amount" ? sort.direction : null}>Amount</Th>
+              <Th className="w-[88px]">Action</Th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
+            {sortedInvoices.map((r) => (
               <Tr key={r.id}>
                 <Td>{r.number}</Td>
                 <Td>{r.client}</Td>
@@ -77,17 +98,38 @@ export default function FinanceTab() {
                 <Td>{r.issued}</Td>
                 <Td>{r.due}</Td>
                 <Td tight className="max-w-[157px] overflow-hidden">
-                  <Tag tone={toneFor(i)}>{r.status}</Tag>
+                  <Tag tone={toneFor(r.status)}>{r.status}</Tag>
                 </Td>
                 <Td>{r.amount}</Td>
                 <Td>
-                  <RowActions label={r.number} onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))} />
+                  <RowActions
+                    label={r.number}
+                    onEdit={() => setEditing(r)}
+                    onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
+                  />
                 </Td>
               </Tr>
             ))}
           </tbody>
         </Table>
       </div>
+      <EditRecordModal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={`Edit invoice ${editing?.number ?? ""}`}
+        fields={INVOICE_EDIT_FIELDS}
+        values={editing ? {
+          number: editing.number, client: editing.client, project: editing.project,
+          issued: toDateInputValue(editing.issued), due: toDateInputValue(editing.due), status: editing.status, amount: editing.amount,
+        } : {}}
+        onSave={(values) => {
+          if (!editing) return;
+          setRows((prev) => prev.map((invoice) => invoice.id === editing.id
+            ? { ...invoice, ...values, issued: formatDisplayDate(values.issued), due: formatDisplayDate(values.due) }
+            : invoice));
+          setEditing(null);
+        }}
+      />
     </div>
   );
 }

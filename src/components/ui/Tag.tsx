@@ -11,5 +11,5 @@ const TONES: Record<TagTone, string> = {
 };
 
 export default function Tag({ tone = "neutral", children }: { tone?: TagTone; children: ReactNode }) {
-  return <span className={`inline-flex items-center rounded px-[6px] py-[2px] text-h5 whitespace-nowrap ${TONES[tone]}`}>{children}</span>;
+  return <span className={`inline-flex min-h-7 items-center rounded-md px-2 py-1 font-inter text-[14px] leading-5 font-medium whitespace-nowrap ${TONES[tone]}`}>{children}</span>;
 }

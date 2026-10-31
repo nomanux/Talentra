@@ -5,6 +5,9 @@ import Menu from "../../components/ui/Menu";
 import RangePicker, { type Range } from "../../components/ui/RangePicker";
 import Tag, { type TagTone } from "../../components/ui/Tag";
 import { RowActions, Table, Td, Th, Tr } from "../../components/ui/Table";
+import EditRecordModal, { type EditField } from "../../components/ui/EditRecordModal";
+import { formatDisplayDate, toDateInputValue } from "../../utils/dateFormat";
+import useTableSort from "../../components/ui/useTableSort";
 import EmptyState from "../../components/ui/EmptyState";
 import addOutline from "../../assets/icons/add-outline.svg";
 import pdfIcon from "../../assets/icons/pdf.svg";
@@ -42,8 +45,8 @@ const toneFor = (i: number): TagTone => (i === 4 || i === 5 ? "info" : i < 9 ? "
 
 const REQUESTS: Request[] = RAW.map(([created, start, hours, days, status, overtime], i) => ({
   id: i,
-  created,
-  start,
+  created: formatDisplayDate(created),
+  start: formatDisplayDate(start),
   hours,
   days,
   status,
@@ -67,6 +70,20 @@ const MARKED_DAYS = [
 ];
 
 const STATUSES = ["All status", "Under Review", "Awarded", "Draft", "Declined"].map((label) => ({ label }));
+const REQUEST_EDIT_FIELDS: EditField[] = [
+  { key: "created", label: "Created date", type: "date" },
+  { key: "start", label: "Start date", type: "date" },
+  { key: "hours", label: "Total hours" },
+  { key: "days", label: "Total days", type: "number" },
+  { key: "status", label: "Status", options: ["Under Review", "Awarded", "Draft", "Declined"] },
+  { key: "overtime", label: "Over time" },
+];
+const REQUEST_STATUS_TONE: Record<Status, TagTone> = {
+  "Under Review": "pending",
+  Awarded: "success",
+  Draft: "info",
+  Declined: "error",
+};
 
 export default function TimeOffPage() {
   const [params] = useSearchParams();
@@ -75,9 +92,30 @@ export default function TimeOffPage() {
   const [custom, setCustom] = useState<Range>({ start: new Date(2026, 3, 24), end: new Date(2026, 4, 12) });
   const [showPicker, setShowPicker] = useState(params.get("range") === "custom");
   const [status, setStatus] = useState("All status");
+  const [editing, setEditing] = useState<Request | null>(null);
+  const [adding, setAdding] = useState(false);
+  const { sort, toggleSort, sortRows } = useTableSort<Request>();
 
   const visible = useMemo(() => (status === "All status" ? rows : rows.filter((r) => r.status === status)), [rows, status]);
+  const sortedRequests = sortRows(visible);
   const rangeLabel = range === "Custom" ? "Custom range" : range.replace("month", "months");
+  const todayInput = toDateInputValue(formatDisplayDate(new Date()));
+
+  const createRequest = (values: Record<string, string>) => {
+    const newStatus = values.status as Status;
+    const request: Request = {
+      id: Date.now(),
+      created: formatDisplayDate(values.created),
+      start: formatDisplayDate(values.start),
+      hours: values.hours,
+      days: Number(values.days),
+      status: newStatus,
+      tone: REQUEST_STATUS_TONE[newStatus],
+      overtime: values.overtime,
+    };
+    setRows((current) => [request, ...current]);
+    setAdding(false);
+  };
 
   return (
     <div className="flex min-h-[1035px] flex-col rounded-xl bg-card">
@@ -116,7 +154,7 @@ export default function TimeOffPage() {
             <img src={pdfIcon} alt="" />
             <span>Download PDF</span>
           </Button>
-          <Button variant="primary">
+          <Button variant="primary" onClick={() => setAdding(true)}>
             <img src={addOutline} alt="" />
             <span>Create Time Off</span>
           </Button>
@@ -129,7 +167,7 @@ export default function TimeOffPage() {
           title="No Time Yet"
           lines={["No timeyet Add your first time and it will appear here.", "You can also use other hire flow functions.", "Create new time"]}
           action={
-            <Button variant="primary" onClick={() => setRows(REQUESTS)}>
+            <Button variant="primary" onClick={() => setAdding(true)}>
               <img src={addOutline} alt="" />
               <span>Create Time Off</span>
             </Button>
@@ -140,17 +178,17 @@ export default function TimeOffPage() {
           <Table>
             <thead>
               <tr>
-                <Th className="w-[204px]">Created Date</Th>
-                <Th className="w-[210px]">Start Date</Th>
-                <Th className="w-[194px]">Total Hours</Th>
-                <Th className="w-[107px]">Total Day</Th>
-                <Th className="w-[157px]">Status</Th>
-                <Th className="w-[165px]">Over Time</Th>
-                <Th className="w-[63px]">Action</Th>
+                <Th className="w-[204px]" onSort={() => toggleSort("created")} sortDirection={sort?.key === "created" ? sort.direction : null}>Created Date</Th>
+                <Th className="w-[210px]" onSort={() => toggleSort("start")} sortDirection={sort?.key === "start" ? sort.direction : null}>Start Date</Th>
+                <Th className="w-[194px]" onSort={() => toggleSort("hours")} sortDirection={sort?.key === "hours" ? sort.direction : null}>Total Hours</Th>
+                <Th className="w-[107px]" onSort={() => toggleSort("days")} sortDirection={sort?.key === "days" ? sort.direction : null}>Total Day</Th>
+                <Th className="w-[157px]" onSort={() => toggleSort("status")} sortDirection={sort?.key === "status" ? sort.direction : null}>Status</Th>
+                <Th className="w-[165px]" onSort={() => toggleSort("overtime")} sortDirection={sort?.key === "overtime" ? sort.direction : null}>Over Time</Th>
+                <Th className="w-[88px]">Action</Th>
               </tr>
             </thead>
             <tbody>
-              {visible.map((r) => (
+              {sortedRequests.map((r) => (
                 <Tr key={r.id}>
                   <Td className="!py-[10px]">{r.created}</Td>
                   <Td className="!py-[10px]">{r.start}</Td>
@@ -161,7 +199,11 @@ export default function TimeOffPage() {
                   </Td>
                   <Td className="!py-[10px]">{r.overtime}</Td>
                   <Td>
-                    <RowActions label={r.created} onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))} />
+                    <RowActions
+                      label={r.created}
+                      onEdit={() => setEditing(r)}
+                      onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
+                    />
                   </Td>
                 </Tr>
               ))}
@@ -169,6 +211,36 @@ export default function TimeOffPage() {
           </Table>
         </div>
       )}
+      <EditRecordModal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title="Edit time-off request"
+        fields={REQUEST_EDIT_FIELDS}
+        values={editing ? {
+          created: toDateInputValue(editing.created), start: toDateInputValue(editing.start), hours: editing.hours,
+          days: String(editing.days), status: editing.status, overtime: editing.overtime,
+        } : {}}
+        onSave={(values) => {
+          if (!editing) return;
+          const nextStatus = values.status as Status;
+          setRows((prev) => prev.map((row) => row.id === editing.id
+            ? {
+                ...row, ...values,
+                created: formatDisplayDate(values.created), start: formatDisplayDate(values.start),
+                days: Number(values.days), status: nextStatus, tone: REQUEST_STATUS_TONE[nextStatus],
+              }
+            : row));
+          setEditing(null);
+        }}
+      />
+      <EditRecordModal
+        open={adding}
+        onClose={() => setAdding(false)}
+        title="Create time-off request"
+        fields={REQUEST_EDIT_FIELDS}
+        values={{ created: todayInput, start: todayInput, hours: "9:00 AM - 5:00 PM", days: "1", status: "Draft", overtime: "0h" }}
+        onSave={createRequest}
+      />
     </div>
   );
 }

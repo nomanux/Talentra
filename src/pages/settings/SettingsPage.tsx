@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import Switch from "../../components/ui/Switch";
@@ -34,6 +34,20 @@ function SavedNote({ show }: { show: boolean }) {
 
 function ProfileTab() {
   const [saved, setSaved] = useState(false);
+  const [avatar, setAvatar] = useState(CURRENT_USER.avatar);
+
+  useEffect(() => {
+    if (!avatar.startsWith("blob:")) return;
+    return () => URL.revokeObjectURL(avatar);
+  }, [avatar]);
+
+  const changeAvatar = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    setAvatar(URL.createObjectURL(file));
+    setSaved(false);
+  };
+
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaved(true);
@@ -42,7 +56,19 @@ function ProfileTab() {
   return (
     <form onSubmit={submit} className="flex flex-col gap-6">
       <div className="flex items-center gap-4">
-        <img src={CURRENT_USER.avatar} alt="" className="size-16 rounded-full object-cover" />
+        <label className="group relative block size-16 shrink-0 cursor-pointer rounded-full" title="Change profile photo">
+          <img src={avatar} alt={`${CURRENT_USER.name} profile`} className="size-16 rounded-full object-cover" />
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 text-xs font-medium text-white opacity-0 transition group-hover:bg-black/40 group-hover:opacity-100 group-focus-within:bg-black/40 group-focus-within:opacity-100">
+            Change
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            aria-label="Change profile photo"
+            className="sr-only"
+            onChange={changeAvatar}
+          />
+        </label>
         <div className="flex flex-col gap-1">
           <p className="text-h5">{CURRENT_USER.name}</p>
           <p className="text-body1 text-text-secondary">{CURRENT_USER.role}</p>
@@ -166,7 +192,7 @@ export default function SettingsPage() {
           </button>
         ))}
       </div>
-      <div className="pt-2">
+      <div className="w-full max-w-5xl self-center pt-2">
         {tab === "profile" && <ProfileTab />}
         {tab === "notifications" && <NotificationsTab />}
         {tab === "appearance" && <AppearanceTab />}

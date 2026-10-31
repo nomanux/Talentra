@@ -5,6 +5,8 @@ import Menu from "../../components/ui/Menu";
 import EmptyState from "../../components/ui/EmptyState";
 import Tag from "../../components/ui/Tag";
 import { RowActions, Table, Td, Th, Tr } from "../../components/ui/Table";
+import EditRecordModal, { type EditField } from "../../components/ui/EditRecordModal";
+import useTableSort from "../../components/ui/useTableSort";
 import { MEMBERS } from "../teams/TeamsPage";
 import searchIcon from "../../assets/icons/search-secondary.svg";
 import pdfIcon from "../../assets/icons/pdf-b.svg";
@@ -16,6 +18,7 @@ import callIcon from "../../assets/icons/call.svg";
 import ring from "../../assets/employees/avatar-ring.svg";
 import avatarBg from "../../assets/employees/avatar-bg.svg";
 import timerIcon from "../../assets/icons/timer-01-empty.svg";
+import { toDateInputValue, formatDisplayDate } from "../../utils/dateFormat";
 
 const photos = import.meta.glob<string>("../../assets/employees/emp-*.png", { eager: true, import: "default" });
 const photo = (n: number) => photos[`../../assets/employees/emp-${n}.png`];
@@ -59,6 +62,14 @@ export function EmployeeAvatar({ src, crop }: { src: string; crop: Crop }) {
 const OFFICES = ["All office", "UI Lab Studio", "New York", "London"].map((label) => ({ label }));
 const TITLES = ["All job titles", "Project Management", "UI Desiger", "Digital Marketing", "Back End Developer"].map((label) => ({ label }));
 const STATUSES = ["All status", "Active", "Suspended", "Pending", "Draft"].map((label) => ({ label }));
+const EMPLOYEE_EDIT_FIELDS: EditField[] = [
+  { key: "name", label: "Employee name" },
+  { key: "email", label: "Email", type: "email" },
+  { key: "date", label: "Date", type: "date" },
+  { key: "time", label: "Time" },
+  { key: "project", label: "Project" },
+  { key: "status", label: "Status", options: ["Active", "Suspended", "Pending", "Draft"] },
+];
 
 export default function EmployeesPage() {
   const [params, setParams] = useSearchParams();
@@ -69,11 +80,15 @@ export default function EmployeesPage() {
   const [title, setTitle] = useState("All job titles");
   const [status, setStatus] = useState("All status");
   const [rows, setRows] = useState(empty ? [] : MEMBERS);
+  const [editing, setEditing] = useState<(typeof MEMBERS)[number] | null>(null);
+  const [adding, setAdding] = useState(false);
+  const { sort, toggleSort, sortRows } = useTableSort<(typeof MEMBERS)[number]>();
 
   const visibleRows = useMemo(
     () => rows.filter((m) => m.name.toLowerCase().includes(query.toLowerCase()) && (status === "All status" || m.status === status)),
     [rows, query, status],
   );
+  const sortedRows = sortRows(visibleRows);
   const visibleCards = useMemo(
     () => GRID.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()) && (title === "All job titles" || c.role === title)),
     [query, title],
@@ -119,7 +134,7 @@ export default function EmployeesPage() {
           <img src={pdfIcon} alt="" />
           <span>Export</span>
         </Button>
-        <Button variant="primary">
+        <Button variant="primary" onClick={() => setAdding(true)}>
           <img src={addOutline} alt="" />
           <span>Add New</span>
         </Button>
@@ -170,6 +185,28 @@ export default function EmployeesPage() {
             </Link>
           ))}
         </div>
+        <EditRecordModal
+          open={adding}
+          onClose={() => setAdding(false)}
+          title="Add employee"
+          fields={EMPLOYEE_EDIT_FIELDS}
+          values={{ name: "", email: "", date: toDateInputValue(formatDisplayDate(new Date())), time: "Now", project: "", status: "Active" }}
+          onSave={(values) => {
+            const nextEmployee = {
+              id: Date.now(),
+              name: values.name,
+              email: values.email,
+              date: formatDisplayDate(values.date),
+              time: values.time,
+              project: values.project,
+              status: values.status as (typeof MEMBERS)[number]["status"],
+              avatar: MEMBERS[0]?.avatar,
+            };
+            setRows((prev) => [nextEmployee, ...prev]);
+            setParams({});
+            setAdding(false);
+          }}
+        />
       </div>
     );
   }
@@ -193,17 +230,17 @@ export default function EmployeesPage() {
         <Table>
           <thead>
             <tr>
-              <Th className="w-[204px]">Employee Name</Th>
-              <Th className="w-[278px]">Email</Th>
-              <Th className="w-[118px]">Date</Th>
-              <Th className="w-[107px]">Time</Th>
-              <Th className="w-[165px]">Project</Th>
-              <Th className="w-[157px]">Status</Th>
-              <Th className="w-[63px]">Action</Th>
+              <Th className="w-[204px]" onSort={() => toggleSort("name")} sortDirection={sort?.key === "name" ? sort.direction : null}>Employee Name</Th>
+              <Th className="w-[278px]" onSort={() => toggleSort("email")} sortDirection={sort?.key === "email" ? sort.direction : null}>Email</Th>
+              <Th className="w-[118px]" onSort={() => toggleSort("date")} sortDirection={sort?.key === "date" ? sort.direction : null}>Date</Th>
+              <Th className="w-[107px]" onSort={() => toggleSort("time")} sortDirection={sort?.key === "time" ? sort.direction : null}>Time</Th>
+              <Th className="w-[165px]" onSort={() => toggleSort("project")} sortDirection={sort?.key === "project" ? sort.direction : null}>Project</Th>
+              <Th className="w-[157px]" onSort={() => toggleSort("status")} sortDirection={sort?.key === "status" ? sort.direction : null}>Status</Th>
+              <Th className="w-[88px]">Action</Th>
             </tr>
           </thead>
           <tbody>
-            {visibleRows.map((m) => (
+            {sortedRows.map((m) => (
               <Tr key={m.id}>
                 <Td className="!py-[10px]">
                   <Link to={`/employees/${m.id}`} className="flex items-center gap-[10px] hover:text-primary">
@@ -216,16 +253,56 @@ export default function EmployeesPage() {
                 <Td className="!py-[10px]">{m.time}</Td>
                 <Td className="!py-[10px]">{m.project}</Td>
                 <Td tight>
-                  <Tag tone={m.status === "Active" ? "success" : m.status === "Suspended" ? "info" : "pending"}>{m.status}</Tag>
+                  <Tag tone={m.status === "Active" ? "success" : m.status === "Suspended" ? "info" : m.status === "Pending" ? "pending" : "neutral"}>{m.status}</Tag>
                 </Td>
                 <Td>
-                  <RowActions label={m.name} onDelete={() => setRows((prev) => prev.filter((x) => x.id !== m.id))} />
+                  <RowActions
+                    label={m.name}
+                    onEdit={() => setEditing(m)}
+                    onDelete={() => setRows((prev) => prev.filter((x) => x.id !== m.id))}
+                  />
                 </Td>
               </Tr>
             ))}
           </tbody>
         </Table>
       )}
+      <EditRecordModal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={`Edit ${editing?.name ?? "employee"}`}
+        fields={EMPLOYEE_EDIT_FIELDS}
+        values={editing ? {
+          name: editing.name, email: editing.email, date: toDateInputValue(editing.date), time: editing.time,
+          project: editing.project, status: editing.status,
+        } : {}}
+        onSave={(values) => {
+          if (!editing) return;
+          setRows((prev) => prev.map((row) => row.id === editing.id ? { ...row, ...values, date: formatDisplayDate(values.date), status: values.status as (typeof row.status) } : row));
+          setEditing(null);
+        }}
+      />
+      <EditRecordModal
+        open={adding}
+        onClose={() => setAdding(false)}
+        title="Add employee"
+        fields={EMPLOYEE_EDIT_FIELDS}
+        values={{ name: "", email: "", date: toDateInputValue(formatDisplayDate(new Date())), time: "Now", project: "", status: "Active" }}
+        onSave={(values) => {
+          const nextEmployee = {
+            id: Date.now(),
+            name: values.name,
+            email: values.email,
+            date: formatDisplayDate(values.date),
+            time: values.time,
+            project: values.project,
+            status: values.status as (typeof MEMBERS)[number]["status"],
+            avatar: MEMBERS[0]?.avatar,
+          };
+          setRows((prev) => [nextEmployee, ...prev]);
+          setAdding(false);
+        }}
+      />
     </div>
   );
 }

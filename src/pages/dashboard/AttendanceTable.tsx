@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Card from "../../components/ui/Card";
 import Tag, { type TagTone } from "../../components/ui/Tag";
 import refreshIcon from "../../assets/icons/refresh-sm.svg";
 import moreIcon from "../../assets/icons/more-horizontal.svg";
-import pencilIcon from "../../assets/icons/pencil.svg";
-import trashIcon from "../../assets/icons/trash.svg";
+import Button from "../../components/ui/Button";
+import { Field, Select, TextInput } from "../../components/ui/Field";
+import { RowActions } from "../../components/ui/Table";
+import useTableSort from "../../components/ui/useTableSort";
 
 type Row = {
   id: string;
@@ -41,14 +43,14 @@ const STATUS_TONE: Record<Row["status"], TagTone> = {
 };
 
 const TABS = ["Attendance", "Projects", "Performance", "Day-Off Request"];
-const COLUMNS = [
-  { label: "Employee ID", width: "w-[160px]" },
-  { label: "Name", width: "w-[190px]" },
-  { label: "Department", width: "w-[175px]" },
-  { label: "Status", width: "w-[157px]" },
-  { label: "Check-In Time", width: "w-[158px]" },
-  { label: "Check-Out Time", width: "w-[196px]" },
-  { label: "Action", width: "w-[63px]" },
+const COLUMNS: { label: string; width: string; key: keyof Row | null }[] = [
+  { label: "Employee ID", width: "w-[160px]", key: "id" },
+  { label: "Name", width: "w-[190px]", key: "name" },
+  { label: "Department", width: "w-[175px]", key: "department" },
+  { label: "Status", width: "w-[157px]", key: "status" },
+  { label: "Check-In Time", width: "w-[158px]", key: "checkIn" },
+  { label: "Check-Out Time", width: "w-[196px]", key: "checkOut" },
+  { label: "Action", width: "w-[88px]", key: null },
 ];
 
 const cell = "border-r border-b border-stroke-secondary px-[10px] text-h5 text-text-secondary whitespace-nowrap";
@@ -56,6 +58,16 @@ const cell = "border-r border-b border-stroke-secondary px-[10px] text-h5 text-t
 export default function AttendanceTable() {
   const [tab, setTab] = useState(TABS[0]);
   const [rows, setRows] = useState(ROWS);
+  const [editingRow, setEditingRow] = useState<Row | null>(null);
+  const { sort, toggleSort, sortRows } = useTableSort<Row>();
+  const sortedRows = sortRows(rows);
+
+  const saveRow = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingRow) return;
+    setRows((current) => current.map((row) => row.id === editingRow.id ? editingRow : row));
+    setEditingRow(null);
+  };
 
   return (
     <Card className="overflow-hidden rounded-[14px]">
@@ -89,16 +101,34 @@ export default function AttendanceTable() {
         <table className="w-full min-w-[1099px] border-collapse">
           <thead>
             <tr>
-              {COLUMNS.map((c) => (
-                <th key={c.label} className={`${cell} ${c.width} py-[6px] text-left font-medium text-text-tertiary`}>
-                  {c.label}
-                </th>
-              ))}
+              {COLUMNS.map((c) => {
+                const direction = c.key && sort?.key === c.key ? sort.direction : null;
+                return (
+                  <th
+                    key={c.label}
+                    aria-sort={c.key ? direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none" : undefined}
+                    className={`${cell} ${c.width} py-[6px] text-left font-medium text-text-tertiary`}
+                  >
+                    {c.key ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(c.key!)}
+                        className="flex w-full items-center justify-between gap-2 text-left transition-colors hover:text-text-primary focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      >
+                        <span>{c.label}</span>
+                        <span aria-hidden="true" className={`text-body2 ${direction ? "text-primary" : "text-text-tertiary/60"}`}>
+                          {direction === "asc" ? "↑" : direction === "desc" ? "↓" : "↕"}
+                        </span>
+                      </button>
+                    ) : c.label}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => {
-              const last = i === rows.length - 1 ? "border-b-0" : "";
+            {sortedRows.map((r, i) => {
+              const last = i === sortedRows.length - 1 ? "border-b-0" : "";
               return (
                 <tr key={r.id} className="h-10 hover:bg-surface/60">
                   <td className={`${cell} ${last} py-2`}>{r.id}</td>
@@ -112,19 +142,11 @@ export default function AttendanceTable() {
                   <td className={`${cell} ${last} py-2`}>{r.checkIn}</td>
                   <td className={`${cell} ${last} py-2`}>{r.checkOut}</td>
                   <td className={`${cell} ${last} py-2`}>
-                    <div className="flex items-center justify-center gap-[10px]">
-                      <button type="button" aria-label={`Edit ${r.name}`} className="flex size-[14px] items-center justify-center">
-                        <img src={pencilIcon} alt="" />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Delete ${r.name}`}
-                        onClick={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
-                        className="flex size-[14px] items-center justify-center"
-                      >
-                        <img src={trashIcon} alt="" />
-                      </button>
-                    </div>
+                    <RowActions
+                      label={r.name}
+                      onEdit={() => setEditingRow({ ...r })}
+                      onDelete={() => setRows((prev) => prev.filter((x) => x.id !== r.id))}
+                    />
                   </td>
                 </tr>
               );
@@ -132,6 +154,71 @@ export default function AttendanceTable() {
           </tbody>
         </table>
       </div>
+
+      {editingRow && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setEditingRow(null);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="attendance-edit-title"
+            className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-xl"
+          >
+            <div className="mb-5">
+              <h2 id="attendance-edit-title" className="text-h4 text-text-primary">Edit attendance</h2>
+              <p className="mt-1 text-body2 text-text-tertiary">Update {editingRow.name}’s attendance details.</p>
+            </div>
+            <form onSubmit={saveRow} className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Employee ID"><TextInput value={editingRow.id} readOnly /></Field>
+                <Field label="Name"><TextInput value={editingRow.name} readOnly /></Field>
+                <Field label="Department">
+                  <Select
+                    value={editingRow.department}
+                    onChange={(event) => setEditingRow({ ...editingRow, department: event.target.value as Row["department"] })}
+                  >
+                    <option>Marketing</option>
+                    <option>Technology</option>
+                    <option>Human Resource</option>
+                  </Select>
+                </Field>
+                <Field label="Status">
+                  <Select
+                    value={editingRow.status}
+                    onChange={(event) => setEditingRow({ ...editingRow, status: event.target.value as Row["status"] })}
+                  >
+                    <option>Attend</option>
+                    <option>Day-Off</option>
+                    <option>Sick</option>
+                  </Select>
+                </Field>
+                <Field label="Check-in time">
+                  <TextInput
+                    value={editingRow.checkIn}
+                    placeholder="HH:MM or --:--"
+                    onChange={(event) => setEditingRow({ ...editingRow, checkIn: event.target.value })}
+                  />
+                </Field>
+                <Field label="Check-out time">
+                  <TextInput
+                    value={editingRow.checkOut}
+                    placeholder="HH:MM or --:--"
+                    onChange={(event) => setEditingRow({ ...editingRow, checkOut: event.target.value })}
+                  />
+                </Field>
+              </div>
+              <div className="mt-2 flex justify-end gap-2">
+                <Button onClick={() => setEditingRow(null)}>Cancel</Button>
+                <Button variant="primary" type="submit">Save changes</Button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </Card>
   );
 }

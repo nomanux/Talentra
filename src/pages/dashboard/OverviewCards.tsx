@@ -10,7 +10,7 @@ export function AverageKpiCard() {
   return (
     <Card className="flex flex-col gap-[6px] overflow-hidden">
       <div className="flex items-center justify-between px-[8.5px]">
-        <h2 className="text-h4">Avarage KPI</h2>
+        <h2 className="text-h4">Average KPI</h2>
         <MoreButton />
       </div>
       <div className="flex h-[188px] flex-col gap-4 px-4 py-3">
@@ -36,6 +36,8 @@ export function AverageKpiCard() {
 }
 
 export function UsedDevicesCard({ mobile = 78, checkedIn = 120 }: { mobile?: number; checkedIn?: number }) {
+  const mobileEmployees = Math.round((checkedIn * mobile) / 100);
+  const desktopEmployees = checkedIn - mobileEmployees;
   return (
     <Card className="pt-[5px] pb-[10px]">
       <div className="flex items-center justify-between pr-[5px] pl-4">
@@ -61,7 +63,7 @@ export function UsedDevicesCard({ mobile = 78, checkedIn = 120 }: { mobile?: num
             <span className="font-inter text-[14px] leading-5 text-text-tertiary">Mobile</span>
           </span>
           <p className="text-h3">{mobile}%</p>
-          <p className="text-h5 text-text-secondary">84 Employees</p>
+          <p className="text-h5 text-text-secondary">{mobileEmployees} Employees</p>
         </div>
         <div className="flex flex-1 flex-col items-end gap-1 px-4">
           <span className="flex items-center gap-[6px]">
@@ -69,12 +71,12 @@ export function UsedDevicesCard({ mobile = 78, checkedIn = 120 }: { mobile?: num
             <span className="text-h5 text-text-secondary">Desktop</span>
           </span>
           <p className="text-h3">{100 - mobile}%</p>
-          <p className="text-h5 text-text-secondary">84 Employees</p>
+          <p className="text-h5 text-text-secondary">{desktopEmployees} Employees</p>
         </div>
       </div>
-      <div className="flex h-9 items-center gap-1 px-4">
-        <div className="h-3 rounded-[5px] bg-primary" style={{ width: `${(233 / 314) * 100}%` }} />
-        <div className="h-3 flex-1 rounded-[5px] bg-violet" />
+      <div className="flex h-9 items-center px-4">
+        <div className="h-3 rounded-l-[5px] bg-primary" style={{ width: `${mobile}%` }} />
+        <div className="h-3 rounded-r-[5px] bg-violet" style={{ width: `${100 - mobile}%` }} />
       </div>
     </Card>
   );
@@ -96,7 +98,7 @@ export function EmployeeCard() {
       <div className="flex flex-col">
         <p className="text-h5 text-text-secondary">Total Employee</p>
         <div className="flex items-center justify-between">
-          <p className="text-h2">1.218</p>
+          <p className="text-h2">1.250</p>
           <button type="button" aria-label="Add employee" className="flex size-8 items-center justify-center rounded-lg bg-violet hover:brightness-95">
             <img src={plusIcon} alt="" />
           </button>
@@ -104,8 +106,8 @@ export function EmployeeCard() {
         <img src={divider} alt="" className="mt-4 ml-1" />
         <div className="mt-4 flex gap-6">
           {[
-            { n: 782, pct: 68, label: "Male Employee" },
-            { n: 436, pct: 32, label: "Female Employee" },
+            { n: 850, pct: 68, label: "Male Employees" },
+            { n: 400, pct: 32, label: "Female Employees" },
           ].map((g) => (
             <div key={g.label} className="flex flex-1 flex-col gap-1">
               <div className="flex items-baseline gap-1">
@@ -122,6 +124,12 @@ export function EmployeeCard() {
 }
 
 export function ProjectsCard() {
+  const projectCounts = [
+    { count: 73, label: "On Progress" },
+    { count: 3089, label: "Done" },
+  ];
+  const totalProjects = projectCounts.reduce((total, project) => total + project.count, 0);
+  const formatCount = (count: number) => new Intl.NumberFormat("de-DE").format(count);
   return (
     <Card className="flex flex-col gap-[14px] overflow-hidden px-4 pt-[5px] pb-[15px]">
       <div className="flex items-center justify-between">
@@ -130,12 +138,9 @@ export function ProjectsCard() {
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex gap-[6px]">
-          {[
-            { n: "73", label: "On Progress" },
-            { n: "3.089", label: "Done" },
-          ].map((s) => (
+          {projectCounts.map((s) => (
             <div key={s.label} className="flex h-[78px] flex-1 flex-col items-center justify-center gap-[6px] rounded-xl border border-stroke-primary">
-              <span className="text-h3">{s.n}</span>
+              <span className="text-h3">{formatCount(s.count)}</span>
               <span className="text-h5 text-text-secondary">{s.label}</span>
             </div>
           ))}
@@ -144,7 +149,7 @@ export function ProjectsCard() {
           <div className="relative h-[58px]">
             <img src={projectsGraphic} alt="" className="absolute -top-[1.5px] -left-[0.43px]" />
           </div>
-          <p className="text-body2 text-text-secondary">We’ve been handle 3.162 projects so far!</p>
+          <p className="text-body2 text-text-secondary">{formatCount(totalProjects)} projects in total</p>
         </div>
       </div>
     </Card>

@@ -18,8 +18,8 @@ export default function Dashboard() {
     <div className="flex flex-col gap-2 sm:gap-[11px]">
       <section className="grid grid-cols-2 gap-2 sm:gap-[11px] xl:grid-cols-4">
         <StatCard
-          value="453"
-          label="Employee"
+          value="1.250"
+          label="Employees"
           delta={10}
           icon={icon2User}
           iconBg="from-[#7c61ff] to-[#9a87f9]"

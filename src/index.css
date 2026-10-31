@@ -79,6 +79,10 @@
   body {
     @apply bg-page font-sans text-text-primary antialiased;
   }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 /* Typography scale (Hanken Grotesk, -1% tracking). */

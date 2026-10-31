@@ -6,6 +6,8 @@ import EmptyState from "../../components/ui/EmptyState";
 import Tag, { type TagTone } from "../../components/ui/Tag";
 import { Field, Select, TextInput } from "../../components/ui/Field";
 import { RowActions, Table, Td, Th, Tr } from "../../components/ui/Table";
+import EditRecordModal, { type EditField } from "../../components/ui/EditRecordModal";
+import useTableSort from "../../components/ui/useTableSort";
 import pdfIcon from "../../assets/icons/pdf.svg";
 import addOutline from "../../assets/icons/add-outline.svg";
 import searchIcon from "../../assets/icons/search-01.svg";
@@ -13,6 +15,7 @@ import filterIcon from "../../assets/icons/filter-lines.svg";
 import sortIcon from "../../assets/icons/filter-mail.svg";
 import arrowDown from "../../assets/icons/arrow-down-fill.svg";
 import timerIcon from "../../assets/icons/timer-01-empty.svg";
+import { formatDisplayDate, toDateInputValue } from "../../utils/dateFormat";
 
 const avatarModules = import.meta.glob<string>("../../assets/avatars/team-*.png", { eager: true, import: "default" });
 const avatar = (n: number) => avatarModules[`../../assets/avatars/team-${n}.png`];
@@ -20,7 +23,14 @@ const avatar = (n: number) => avatarModules[`../../assets/avatars/team-${n}.png`
 type Status = "Active" | "Suspended" | "Pending" | "Draft";
 type Member = { id: number; name: string; email: string; date: string; time: string; project: string; status: Status; avatar?: string };
 
-const STATUS_TONE: Record<Status, TagTone> = { Active: "success", Suspended: "info", Pending: "pending", Draft: "pending" };
+const STATUS_TONE: Record<Status, TagTone> = { Active: "success", Suspended: "info", Pending: "pending", Draft: "neutral" };
+const MEMBER_EDIT_FIELDS: EditField[] = [
+  { key: "name", label: "Name" },
+  { key: "email", label: "Email", type: "email" },
+  { key: "project", label: "Project name" },
+  { key: "date", label: "Date", type: "date" },
+  { key: "status", label: "Status", options: ["Active", "Suspended", "Pending", "Draft"] },
+];
 
 const RAW: [string, string, string, string, string, Status, number][] = [
   ["Savannah Nguyen", "curtis.weaver@example.com", "7/11/19", "3w", "Tafinlar", "Active", 1],
@@ -45,7 +55,7 @@ const RAW: [string, string, string, string, string, Status, number][] = [
   ["Bessie Cooper", "dolores.chambers@example.com", "9/4/12", "Now", "Dtic-Dome", "Draft", 18],
 ];
 
-export const MEMBERS: Member[] = RAW.map(([name, email, date, time, project, status, a], id) => ({ id, name, email, date, time, project, status, avatar: avatar(a) }));
+export const MEMBERS: Member[] = RAW.map(([name, email, date, time, project, status, a], id) => ({ id, name, email, date: formatDisplayDate(date), time, project, status, avatar: avatar(a) }));
 
 const TABS = ["All", "Active", "Absent"] as const;
 
@@ -70,7 +80,7 @@ function AddMemberModal({ open, onClose, onAdd }: { open: boolean; onClose: () =
       email: String(f.get("email") || ""),
       project: String(f.get("project") || ""),
       status: f.get("status") as Status,
-      date: new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" }),
+      date: formatDisplayDate(new Date()),
       time: "Now",
     });
     onClose();
@@ -121,6 +131,8 @@ export default function TeamsPage() {
   const [query, setQuery] = useState("");
   const [sortAsc, setSortAsc] = useState<boolean | null>(null);
   const [adding, setAdding] = useState(params.has("add"));
+  const [editing, setEditing] = useState<Member | null>(null);
+  const { sort, toggleSort, sortRows } = useTableSort<Member>();
 
   const visible = useMemo(() => {
     let list = members.filter((m) => (tab === "All" ? true : tab === "Active" ? m.status === "Active" : m.status !== "Active"));
@@ -128,6 +140,7 @@ export default function TeamsPage() {
     if (sortAsc !== null) list = [...list].sort((a, b) => (sortAsc ? 1 : -1) * a.name.localeCompare(b.name));
     return list;
   }, [members, tab, query, sortAsc]);
+  const sortedMembers = sortRows(visible);
 
   return (
     <div className="flex min-h-[950px] flex-col rounded-xl bg-card">
@@ -201,17 +214,17 @@ export default function TeamsPage() {
         <Table>
           <thead>
             <tr>
-              <Th className="w-[204px]">Member Name</Th>
-              <Th className="w-[278px]">Email</Th>
-              <Th className="w-[118px]">Date</Th>
-              <Th className="w-[107px]">Time</Th>
-              <Th className="w-[165px]">Project</Th>
-              <Th className="w-[157px]">Status</Th>
-              <Th className="w-[63px]">Action</Th>
+              <Th className="w-[204px]" onSort={() => toggleSort("name")} sortDirection={sort?.key === "name" ? sort.direction : null}>Member Name</Th>
+              <Th className="w-[278px]" onSort={() => toggleSort("email")} sortDirection={sort?.key === "email" ? sort.direction : null}>Email</Th>
+              <Th className="w-[118px]" onSort={() => toggleSort("date")} sortDirection={sort?.key === "date" ? sort.direction : null}>Date</Th>
+              <Th className="w-[107px]" onSort={() => toggleSort("time")} sortDirection={sort?.key === "time" ? sort.direction : null}>Time</Th>
+              <Th className="w-[165px]" onSort={() => toggleSort("project")} sortDirection={sort?.key === "project" ? sort.direction : null}>Project</Th>
+              <Th className="w-[157px]" onSort={() => toggleSort("status")} sortDirection={sort?.key === "status" ? sort.direction : null}>Status</Th>
+              <Th className="w-[88px]">Action</Th>
             </tr>
           </thead>
           <tbody>
-            {visible.map((m) => (
+            {sortedMembers.map((m) => (
               <Tr key={m.id}>
                 <Td className="!py-[10px]">
                   <span className="flex items-center gap-[10px]">
@@ -227,7 +240,11 @@ export default function TeamsPage() {
                   <Tag tone={STATUS_TONE[m.status]}>{m.status}</Tag>
                 </Td>
                 <Td>
-                  <RowActions label={m.name} onDelete={() => setMembers((prev) => prev.filter((x) => x.id !== m.id))} />
+                  <RowActions
+                    label={m.name}
+                    onEdit={() => setEditing(m)}
+                    onDelete={() => setMembers((prev) => prev.filter((x) => x.id !== m.id))}
+                  />
                 </Td>
               </Tr>
             ))}
@@ -239,6 +256,20 @@ export default function TeamsPage() {
         open={adding}
         onClose={() => setAdding(false)}
         onAdd={(m) => setMembers((prev) => [{ ...m, id: Date.now() }, ...prev])}
+      />
+      <EditRecordModal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={`Edit ${editing?.name ?? "member"}`}
+        fields={MEMBER_EDIT_FIELDS}
+        values={editing ? { name: editing.name, email: editing.email, project: editing.project, date: toDateInputValue(editing.date), status: editing.status } : {}}
+        onSave={(values) => {
+          if (!editing) return;
+          setMembers((prev) => prev.map((member) => member.id === editing.id
+            ? { ...member, ...values, date: formatDisplayDate(values.date), status: values.status as Status }
+            : member));
+          setEditing(null);
+        }}
       />
     </div>
   );

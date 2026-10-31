@@ -4,6 +4,9 @@ import Menu from "../../components/ui/Menu";
 import FileIcon from "../../components/ui/FileIcon";
 import Tag from "../../components/ui/Tag";
 import { RowActions, Table, Td, Th, Tr } from "../../components/ui/Table";
+import EditRecordModal, { type EditField } from "../../components/ui/EditRecordModal";
+import { formatDisplayDate, toDateInputValue } from "../../utils/dateFormat";
+import useTableSort from "../../components/ui/useTableSort";
 import searchIcon from "../../assets/icons/search-01.svg";
 import pdfIcon from "../../assets/icons/pdf.svg";
 import addOutline from "../../assets/icons/add-outline.svg";
@@ -31,18 +34,29 @@ const DAYS = [
 ];
 const statusFor = (i: number): Status => (i === 4 || i === 5 ? "Suspended" : i < 9 ? "Active" : i === 19 ? "Draft" : "Pending");
 
-const DOCS: Doc[] = NAMES.map((name, i) => ({ id: i, name, revision: REVISIONS[i], date: DATES[i], size: SIZES[i], day: DAYS[i], status: statusFor(i) }));
-const TONE = { Active: "success", Suspended: "info", Pending: "pending", Draft: "pending" } as const;
+const DOCS: Doc[] = NAMES.map((name, i) => ({ id: i, name, revision: REVISIONS[i], date: formatDisplayDate(DATES[i]), size: SIZES[i], day: formatDisplayDate(DAYS[i]), status: statusFor(i) }));
+const TONE = { Active: "success", Suspended: "info", Pending: "pending", Draft: "neutral" } as const;
 const STATUSES = ["All status", "Active", "Suspended", "Pending", "Draft"].map((label) => ({ label }));
+const DOCUMENT_EDIT_FIELDS: EditField[] = [
+  { key: "name", label: "File name" },
+  { key: "revision", label: "Revision" },
+  { key: "date", label: "Date", type: "date" },
+  { key: "size", label: "Size" },
+  { key: "day", label: "Day", type: "date" },
+  { key: "status", label: "Status", options: ["Active", "Suspended", "Pending", "Draft"] },
+];
 
 export default function DocumentsPage() {
   const [docs, setDocs] = useState(DOCS);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All status");
+  const [editing, setEditing] = useState<Doc | null>(null);
+  const { sort, toggleSort, sortRows } = useTableSort<Doc>();
   const visible = useMemo(
     () => docs.filter((d) => d.name.toLowerCase().includes(query.toLowerCase()) && (status === "All status" || d.status === status)),
     [docs, query, status],
   );
+  const sortedDocs = sortRows(visible);
 
   return (
     <div className="flex min-h-[950px] flex-col rounded-xl bg-card">
@@ -76,7 +90,7 @@ export default function DocumentsPage() {
                 const file = e.target.files?.[0];
                 if (!file) return;
                 setDocs((prev) => [
-                  { id: Date.now(), name: file.name, revision: "You", date: new Date().toLocaleDateString("en-US"), size: "Now", day: new Date().toDateString(), status: "Draft" },
+                  { id: Date.now(), name: file.name, revision: "You", date: formatDisplayDate(new Date()), size: "Now", day: formatDisplayDate(new Date()), status: "Draft" },
                   ...prev,
                 ]);
               }}
@@ -87,17 +101,17 @@ export default function DocumentsPage() {
       <Table>
         <thead>
           <tr>
-            <Th className="w-[246px]">File Name</Th>
-            <Th className="w-[211px]">Revision</Th>
-            <Th className="w-[118px]">Date</Th>
-            <Th className="w-[107px]">size</Th>
-            <Th className="w-[194px]">Day</Th>
-            <Th className="w-[157px]">Status</Th>
-            <Th className="w-[63px]">Action</Th>
+            <Th className="w-[246px]" onSort={() => toggleSort("name")} sortDirection={sort?.key === "name" ? sort.direction : null}>File Name</Th>
+            <Th className="w-[211px]" onSort={() => toggleSort("revision")} sortDirection={sort?.key === "revision" ? sort.direction : null}>Revision</Th>
+            <Th className="w-[118px]" onSort={() => toggleSort("date")} sortDirection={sort?.key === "date" ? sort.direction : null}>Date</Th>
+            <Th className="w-[107px]" onSort={() => toggleSort("size")} sortDirection={sort?.key === "size" ? sort.direction : null}>size</Th>
+            <Th className="w-[194px]" onSort={() => toggleSort("day")} sortDirection={sort?.key === "day" ? sort.direction : null}>Day</Th>
+            <Th className="w-[157px]" onSort={() => toggleSort("status")} sortDirection={sort?.key === "status" ? sort.direction : null}>Status</Th>
+            <Th className="w-[88px]">Action</Th>
           </tr>
         </thead>
         <tbody>
-          {visible.map((d) => (
+          {sortedDocs.map((d) => (
             <Tr key={d.id}>
               <Td className="!py-1">
                 <span className="flex items-center gap-[10px]">
@@ -113,12 +127,33 @@ export default function DocumentsPage() {
                 <Tag tone={TONE[d.status]}>{d.status}</Tag>
               </Td>
               <Td>
-                <RowActions label={d.name} onDelete={() => setDocs((prev) => prev.filter((x) => x.id !== d.id))} />
+                <RowActions
+                  label={d.name}
+                  onEdit={() => setEditing(d)}
+                  onDelete={() => setDocs((prev) => prev.filter((x) => x.id !== d.id))}
+                />
               </Td>
             </Tr>
           ))}
         </tbody>
       </Table>
+      <EditRecordModal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={`Edit ${editing?.name ?? "document"}`}
+        fields={DOCUMENT_EDIT_FIELDS}
+        values={editing ? {
+          name: editing.name, revision: editing.revision, date: toDateInputValue(editing.date),
+          size: editing.size, day: toDateInputValue(editing.day), status: editing.status,
+        } : {}}
+        onSave={(values) => {
+          if (!editing) return;
+          setDocs((prev) => prev.map((doc) => doc.id === editing.id
+            ? { ...doc, ...values, date: formatDisplayDate(values.date), day: formatDisplayDate(values.day), status: values.status as Status }
+            : doc));
+          setEditing(null);
+        }}
+      />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import DatePicker from "../ui/DatePicker";
 import { Overlay } from "../ui/Modal";
+import Modal from "../ui/Modal";
+import Button from "../ui/Button";
 import { CommandPalette, LANGUAGES, LanguageMenu } from "./TopBarPopups";
 import calendarIcon from "../../assets/icons/calendar-02.svg";
 import chevronDown from "../../assets/icons/angle-small-down.svg";
@@ -37,6 +39,9 @@ export default function TopBar({
   const [date, setDate] = useState(new Date(2005, 2, 23));
   const [language, setLanguage] = useState(3);
   const [query, setQuery] = useState("");
+  const [referralOpen, setReferralOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const close = useCallback(() => setPopup(null), []);
 
   useEffect(() => {
@@ -52,6 +57,19 @@ export default function TopBar({
   }, []);
 
   const lang = LANGUAGES[language];
+  const inviteLink = `${window.location.origin}/signup?ref=TALENTRA100`;
+
+  const copyInviteLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setLinkCopied(true);
+      setCopyFailed(false);
+      window.setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      setLinkCopied(false);
+      setCopyFailed(true);
+    }
+  };
 
   return (
     <header className={`flex items-center justify-between gap-2 ${popup ? "relative z-[60]" : ""}`}>
@@ -147,6 +165,9 @@ export default function TopBar({
 
         <button
           type="button"
+          onClick={() => setReferralOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={referralOpen}
           className="flex h-[41px] items-center justify-center gap-[6px] rounded-full border-[0.777px] border-white/10 bg-orange px-3 sm:w-[125px] sm:px-[30px] font-inter text-[14px] leading-5 font-medium whitespace-nowrap text-white hover:brightness-95"
         >
           <span className="flex size-4 shrink-0 items-center justify-center">
@@ -155,6 +176,35 @@ export default function TopBar({
           <span className="hidden sm:inline">Earn $100</span>
         </button>
       </div>
+
+      <Modal
+        open={referralOpen}
+        onClose={() => setReferralOpen(false)}
+        title="Earn $100"
+        width={480}
+        footer={
+          <Button onClick={() => setReferralOpen(false)}>Done</Button>
+        }
+      >
+        <div className="flex flex-col gap-4 px-6 py-5">
+          <div>
+            <p className="text-body1 text-text-secondary">Invite someone to try Talentra by sharing this signup link.</p>
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border border-stroke-primary bg-surface p-2">
+            <span className="min-w-0 flex-1 truncate px-2 text-body2 text-text-secondary">{inviteLink}</span>
+            <Button variant="outlinePrimary" onClick={copyInviteLink}>
+              <span>{linkCopied ? "Copied" : "Copy link"}</span>
+            </Button>
+          </div>
+          {copyFailed && <p role="status" className="text-body2 text-error">Couldn’t copy the link. You can send it by email instead.</p>}
+          <a
+            href={`mailto:?subject=${encodeURIComponent("Join me on Talentra")}&body=${encodeURIComponent(`Get started with Talentra: ${inviteLink}`)}`}
+            className="self-start text-body1 text-primary hover:underline"
+          >
+            Send invite by email
+          </a>
+        </div>
+      </Modal>
 
       <CommandPalette open={popup === "search"} query={query} onClose={close} />
     </header>
